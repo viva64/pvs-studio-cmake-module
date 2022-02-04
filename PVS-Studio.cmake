@@ -3,7 +3,7 @@
 #
 # Version 12
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.0.0)
 cmake_policy(SET CMP0054 NEW)
 
 if (PVS_STUDIO_AS_SCRIPT)
@@ -561,9 +561,25 @@ function (pvs_studio_add_target)
         set(COMMANDS "")
     endif ()
 
+    set(props_file "${CMAKE_BINARY_DIR}/${PVS_STUDIO_TARGET}.user.props")
+    file(WRITE "${props_file}" [=[
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ <ImportGroup Label="PropertySheets">
+  <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+ </ImportGroup>
+ <ItemDefinitionGroup>
+  <CustomBuild>
+   <BuildInParallel>true</BuildInParallel>
+  </CustomBuild>
+ </ItemDefinitionGroup>
+</Project>
+]=])
+
     add_custom_target("${PVS_STUDIO_TARGET}" ${ALL} ${COMMANDS} 
                       WORKING_DIRECTORY "${CMAKE_BINARY_DIR}" 
                       DEPENDS ${PVS_STUDIO_DEPENDS} "${PVS_STUDIO_LOG}")
+    set_target_properties("${PVS_STUDIO_TARGET}" PROPERTIES VS_USER_PROPS "${props_file}")
 
     # A workaround to add implicit dependencies of source files from include directories
     set_target_properties("${PVS_STUDIO_TARGET}" PROPERTIES INCLUDE_DIRECTORIES "${inc_path}")
