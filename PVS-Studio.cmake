@@ -32,6 +32,7 @@ if (PVS_STUDIO_AS_SCRIPT)
         endif ()
     endforeach ()
     
+    file(REMOVE "${PVS_STUDIO_LOG_FILE}")
     execute_process(COMMAND ${PVS_STUDIO_COMMAND} ${additional_args}
                     RESULT_VARIABLE result
                     OUTPUT_VARIABLE output
@@ -209,8 +210,9 @@ function (pvs_studio_analyze_file SOURCE SOURCE_DIR BINARY_DIR)
 
         string(REPLACE ";" "$<SEMICOLON>" cmdline "${cmdline}")
         set(pvscmd "${CMAKE_COMMAND}"
-                   -D PVS_STUDIO_AS_SCRIPT=TRUE
+                   -D "PVS_STUDIO_AS_SCRIPT=TRUE"
                    -D "PVS_STUDIO_COMMAND=${cmdline}"
+                   -D "PVS_STUDIO_LOG_FILE=${LOG}"
                    -P "${PVS_STUDIO_SCRIPT}"
         )
 
