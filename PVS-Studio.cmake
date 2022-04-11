@@ -541,11 +541,12 @@ function (pvs_studio_add_target)
         string(REPLACE / \\ PVS_STUDIO_LOG "${PVS_STUDIO_LOG}")
     endif ()
 
-    add_custom_command(OUTPUT "${PVS_STUDIO_LOG}"
-                       ${COMMANDS}
-                       COMMENT "${COMMENT}"
-                       DEPENDS ${PVS_STUDIO_PLOGS} ${PVS_STUDIO_PLOGS_DEPENDENCIES}
-                       WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+    add_custom_target(${LOG_RELATIVE}-log
+                      BYPRODUCTS "${PVS_STUDIO_LOG}"
+                      ${COMMANDS}
+                      COMMENT "${COMMENT}"
+                      DEPENDS ${PVS_STUDIO_PLOGS} ${PVS_STUDIO_PLOGS_DEPENDENCIES}
+                      WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 
     if (PVS_STUDIO_ALL)
         set(ALL "ALL")
@@ -580,7 +581,7 @@ function (pvs_studio_add_target)
 
     add_custom_target("${PVS_STUDIO_TARGET}" ${ALL} ${COMMANDS} 
                       WORKING_DIRECTORY "${CMAKE_BINARY_DIR}" 
-                      DEPENDS ${PVS_STUDIO_DEPENDS} "${PVS_STUDIO_LOG}")
+                      DEPENDS ${PVS_STUDIO_DEPENDS} ${LOG_RELATIVE}-log)
     set_target_properties("${PVS_STUDIO_TARGET}" PROPERTIES VS_USER_PROPS "${props_file}")
 
     # A workaround to add implicit dependencies of source files from include directories
