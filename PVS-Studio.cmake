@@ -541,7 +541,9 @@ function (pvs_studio_add_target)
         string(REPLACE / \\ PVS_STUDIO_LOG "${PVS_STUDIO_LOG}")
     endif ()
 
-    add_custom_target(${LOG_RELATIVE}-log
+    set(LOG_TARGET "${PVS_STUDIO_TARGET}-${LOG_RELATIVE}-log")
+
+    add_custom_target("${LOG_TARGET}"
                       BYPRODUCTS "${PVS_STUDIO_LOG}"
                       ${COMMANDS}
                       COMMENT "${COMMENT}"
@@ -581,7 +583,7 @@ function (pvs_studio_add_target)
 
     add_custom_target("${PVS_STUDIO_TARGET}" ${ALL} ${COMMANDS} 
                       WORKING_DIRECTORY "${CMAKE_BINARY_DIR}" 
-                      DEPENDS ${PVS_STUDIO_DEPENDS} ${LOG_RELATIVE}-log)
+                      DEPENDS ${PVS_STUDIO_DEPENDS} "${LOG_TARGET}")
     set_target_properties("${PVS_STUDIO_TARGET}" PROPERTIES VS_USER_PROPS "${props_file}")
 
     # A workaround to add implicit dependencies of source files from include directories
