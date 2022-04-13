@@ -541,14 +541,22 @@ function (pvs_studio_add_target)
         string(REPLACE / \\ PVS_STUDIO_LOG "${PVS_STUDIO_LOG}")
     endif ()
 
-    set(LOG_TARGET "${PVS_STUDIO_TARGET}-${LOG_RELATIVE}-log")
-
-    add_custom_target("${LOG_TARGET}"
-                      BYPRODUCTS "${PVS_STUDIO_LOG}"
-                      ${COMMANDS}
-                      COMMENT "${COMMENT}"
-                      DEPENDS ${PVS_STUDIO_PLOGS} ${PVS_STUDIO_PLOGS_DEPENDENCIES}
-                      WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+    if (CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+        set(LOG_TARGET "${PVS_STUDIO_TARGET}-${LOG_RELATIVE}-log")
+        add_custom_target("${LOG_TARGET}"
+                          BYPRODUCTS "${PVS_STUDIO_LOG}"
+                          ${COMMANDS}
+                          COMMENT "${COMMENT}"
+                          DEPENDS ${PVS_STUDIO_PLOGS} ${PVS_STUDIO_PLOGS_DEPENDENCIES}
+                          WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+    else()
+        set(LOG_TARGET "${PVS_STUDIO_LOG}")
+        add_custom_command(OUTPUT "${LOG_TARGET}"
+                           ${COMMANDS}
+                           COMMENT "${COMMENT}"
+                           DEPENDS ${PVS_STUDIO_PLOGS} ${PVS_STUDIO_PLOGS_DEPENDENCIES}
+                           WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+    endif()
 
     if (PVS_STUDIO_ALL)
         set(ALL "ALL")
