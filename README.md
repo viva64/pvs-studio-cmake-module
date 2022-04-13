@@ -4,4 +4,4 @@ PVS-Studio CMake module (**PVS-Studio.cmake**) can be used to integrate [PVS-Stu
 
 PVS-Studio CMake module uses the `pvs_studio_add_target` function to add a custom PVS-Studio target, which will be used to run the analysis. The detailed description of all available parameters of `pvs_studio_add_target` function is available at [this link](https://pvs-studio.com/en/docs/manual/6591/).
 
-You can also perform analysis of C and C++ projects based on [JSON Compilation Database](https://pvs-studio.com/en/docs/manual/6557/)
+You can also perform analysis of C and C++ projects based on [JSON Compilation Database](https://pvs-studio.com/en/docs/manual/6557/).
