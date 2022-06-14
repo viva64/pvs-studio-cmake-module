@@ -342,14 +342,29 @@ function (pvs_studio_add_target)
     default(PVS_STUDIO_LOG "PVS-Studio.log")
 
     set(PATHS)
+    
     if (WIN32)
-        set(ROOT "PROGRAMFILES(X86)")
-        set(ROOT "$ENV{${ROOT}}/PVS-Studio")
-        string(REPLACE \\ / ROOT "${ROOT}")
+        # The registry value is only read when you do some cache operation on it.
+        # https://stackoverflow.com/questions/1762201/reading-registry-values-with-cmake
+        GET_FILENAME_COMPONENT(ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\ProgramVerificationSystems\\PVS-Studio;installDir]" ABSOLUTE CACHE)
 
-        if (EXISTS "${ROOT}")
-            set(PATHS "${ROOT}")
-        endif ()
+        if(EXISTS "${ROOT}")
+           set(PATHS "${ROOT}")
+        else()
+           set(ROOT "PROGRAMFILES(X86)")
+           set(ROOT "$ENV{${ROOT}}/PVS-Studio")
+           string(REPLACE \\ / ROOT "${ROOT}")
+   
+           if (EXISTS "${ROOT}")
+              set(PATHS "${ROOT}")
+            else()
+              set(ROOT "PATH")
+              set(ROOT "$ENV{${ROOT}}")
+              set(PATHS "${ROOT}")
+           endif ()
+        endif()
+
+        
 
         default(PVS_STUDIO_BIN "CompilerCommandsAnalyzer.exe")
         default(PVS_STUDIO_CONVERTER "HtmlGenerator.exe")
@@ -357,7 +372,7 @@ function (pvs_studio_add_target)
         default(PVS_STUDIO_BIN "pvs-studio-analyzer")
         default(PVS_STUDIO_CONVERTER "plog-converter")
     endif ()
-
+ 
     find_program(PVS_STUDIO_BIN_PATH "${PVS_STUDIO_BIN}" ${PATHS})
     set(PVS_STUDIO_BIN "${PVS_STUDIO_BIN_PATH}")
 
