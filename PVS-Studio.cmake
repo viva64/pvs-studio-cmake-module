@@ -557,7 +557,8 @@ function (pvs_studio_add_target)
     endif ()
 
     if (CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-        set(LOG_TARGET "${PVS_STUDIO_TARGET}-${LOG_RELATIVE}-log")
+        get_filename_component(LOG_NAME ${LOG_RELATIVE} NAME)
+        set(LOG_TARGET "${PVS_STUDIO_TARGET}-${LOG_NAME}-log")
         add_custom_target("${LOG_TARGET}"
                           BYPRODUCTS "${PVS_STUDIO_LOG}"
                           ${COMMANDS}
