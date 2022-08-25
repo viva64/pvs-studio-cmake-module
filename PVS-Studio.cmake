@@ -1,6 +1,6 @@
 # 2006-2008 (c) Viva64.com Team
-# 2008-2018 (c) OOO "Program Verification Systems"
-#
+# 2008-2020 (c) OOO "Program Verification Systems"
+# 2020-2022 (c) PVS-Studio LLC
 # Version 12
 
 cmake_minimum_required(VERSION 3.0.0)
@@ -31,7 +31,7 @@ if (PVS_STUDIO_AS_SCRIPT)
             endif()
         endif()
     endforeach()
-    
+
     file(REMOVE "${PVS_STUDIO_LOG_FILE}")
     execute_process(COMMAND ${PVS_STUDIO_COMMAND} ${additional_args}
                     RESULT_VARIABLE result
@@ -41,7 +41,7 @@ if (PVS_STUDIO_AS_SCRIPT)
     if (result AND NOT output MATCHES "^No compilation units were found\\.")
         message(FATAL_ERROR "PVS-Studio exited with non-zero code.\nStdout:\n${output}\nStderr:\n${error}\n")
     endif()
-    
+
     return()
 endif()
 
@@ -125,7 +125,7 @@ endfunction()
 function (pvs_studio_set_target_flags TARGET CXX C)
     set(CXX_FLAGS "${${CXX}}")
     set(C_FLAGS "${${C}}")
-    
+
     if (NOT MSVC)
         list(APPEND CXX_FLAGS "$<$<BOOL:${CMAKE_SYSROOT}>:--sysroot=${CMAKE_SYSROOT}>")
         list(APPEND C_FLAGS "$<$<BOOL:${CMAKE_SYSROOT}>:--sysroot=${CMAKE_SYSROOT}>")
@@ -341,7 +341,7 @@ function (pvs_studio_add_target)
     default(PVS_STUDIO_LOG "PVS-Studio.log")
 
     set(PATHS)
-    
+
     if (WIN32)
         # The registry value is only read when you do some cache operation on it.
         # https://stackoverflow.com/questions/1762201/reading-registry-values-with-cmake
@@ -353,7 +353,7 @@ function (pvs_studio_add_target)
            set(ROOT "PROGRAMFILES(X86)")
            set(ROOT "$ENV{${ROOT}}/PVS-Studio")
            string(REPLACE \\ / ROOT "${ROOT}")
-   
+
            if (EXISTS "${ROOT}")
               set(PATHS "${ROOT}")
             else()
@@ -363,7 +363,7 @@ function (pvs_studio_add_target)
            endif()
         endif()
 
-        
+
 
         default(PVS_STUDIO_BIN "CompilerCommandsAnalyzer.exe")
         default(PVS_STUDIO_CONVERTER "HtmlGenerator.exe")
@@ -371,7 +371,7 @@ function (pvs_studio_add_target)
         default(PVS_STUDIO_BIN "pvs-studio-analyzer")
         default(PVS_STUDIO_CONVERTER "plog-converter")
     endif()
- 
+
     find_program(PVS_STUDIO_BIN_PATH "${PVS_STUDIO_BIN}" ${PATHS})
     set(PVS_STUDIO_BIN "${PVS_STUDIO_BIN_PATH}")
 
@@ -398,7 +398,7 @@ function (pvs_studio_add_target)
 
     if ("${PVS_STUDIO_CONFIG}" STREQUAL "" AND NOT "${PVS_STUDIO_CFG_TEXT}" STREQUAL "")
         set(PVS_STUDIO_CONFIG "${CMAKE_BINARY_DIR}/PVS-Studio.cfg")
-        
+
         set(PVS_STUDIO_CONFIG_COMMAND "${CMAKE_COMMAND}" -E echo "${PVS_STUDIO_CFG_TEXT}" > "${PVS_STUDIO_CONFIG}")
 
         add_custom_command(OUTPUT "${PVS_STUDIO_CONFIG}"
@@ -438,7 +438,7 @@ function (pvs_studio_add_target)
     if (NOT "${CMAKE_C_COMPILER}" STREQUAL "")
         list(APPEND PVS_STUDIO_ARGS --cc "${CMAKE_C_COMPILER}")
     endif()
-    
+
     if (PVS_STUDIO_KEEP_INTERMEDIATE_FILES)
         list(APPEND PVS_STUDIO_ARGS --dump-files)
     endif()
