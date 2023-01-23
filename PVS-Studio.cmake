@@ -524,14 +524,36 @@ function (pvs_studio_add_target)
             string(REPLACE / \\ PVS_STUDIO_PLOGS "${PVS_STUDIO_PLOGS}")
         endif()
         if (WIN32)
-            set(COMMANDS COMMAND type ${PVS_STUDIO_PLOGS} ${PVS_STUDIO_PLOGS_LOGS} > "${PVS_STUDIO_LOG}" 2>nul || cd .)
+            if (CMAKE_GENERATOR MATCHES "NMake")
+                set(COMMAND_TYPE_FILE "${CMAKE_BINARY_DIR}/PVSConcatAllLogs.cmd")
+                
+                # The number of files that will be merged in one call to the type command
+                set(STEP_SIZE 30)
+                set(BEGIN 0)
+
+                list(APPEND PVS_STUDIO_PLOGS ${PVS_STUDIO_PLOGS_LOGS})
+                list(LENGTH PVS_STUDIO_PLOGS END)
+
+                # Creating a bat file to call the 'type' command
+                file(WRITE ${COMMAND_TYPE_FILE} "@echo off\nbreak > ${PVS_STUDIO_LOG}\n")
+
+                while(BEGIN LESS END)
+                    list(SUBLIST PVS_STUDIO_PLOGS ${BEGIN} ${STEP_SIZE} NEW_LIST)
+                    file(APPEND ${COMMAND_TYPE_FILE} "type ${NEW_LIST} >> ${PVS_STUDIO_LOG} 2>nul || cd .\n")
+                    math(EXPR BEGIN "${BEGIN} + ${STEP_SIZE}")
+                endwhile()
+                
+                list(APPEND COMMANDS COMMAND call ${COMMAND_TYPE_FILE})
+            else()
+                set(COMMANDS COMMAND type ${PVS_STUDIO_PLOGS} ${PVS_STUDIO_PLOGS_LOGS} > "${PVS_STUDIO_LOG}" 2>nul || cd .)
+            endif()
         else()
             set(COMMANDS COMMAND cat ${PVS_STUDIO_PLOGS} ${PVS_STUDIO_PLOGS_LOGS} > "${PVS_STUDIO_LOG}" 2>/dev/null || true)
         endif()
         set(COMMENT "Generating ${LOG_RELATIVE}")
         if (NOT "${PVS_STUDIO_FORMAT}" STREQUAL "" OR PVS_STUDIO_OUTPUT)
             if ("${PVS_STUDIO_FORMAT}" STREQUAL "")
-                set(PVS_STUDIO_FORMAT "errorfile")
+              set(PVS_STUDIO_FORMAT "errorfile")
             endif()
             if (PVS_STUDIO_HIDE_HELP)
               set(PVS_STUDIO_CONVERTER_ARGS ${PVS_STUDIO_CONVERTER_ARGS} --noHelpMessages)
