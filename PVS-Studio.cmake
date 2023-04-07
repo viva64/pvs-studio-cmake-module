@@ -59,7 +59,7 @@ function (pvs_studio_log TEXT)
 endfunction()
 
 function (pvs_studio_relative_path VAR ROOT FILEPATH)
-    if (WIN32)
+    if (CMAKE_HOST_WIN32)
         STRING(REGEX REPLACE "\\\\" "/" ROOT ${ROOT})
         STRING(REGEX REPLACE "\\\\" "/" FILEPATH ${FILEPATH})
     endif()
@@ -342,7 +342,7 @@ function (pvs_studio_add_target)
 
     set(PATHS)
 
-    if (WIN32)
+    if (CMAKE_HOST_WIN32)
         # The registry value is only read when you do some cache operation on it.
         # https://stackoverflow.com/questions/1762201/reading-registry-values-with-cmake
         GET_FILENAME_COMPONENT(ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\ProgramVerificationSystems\\PVS-Studio;installDir]" ABSOLUTE CACHE)
@@ -520,10 +520,8 @@ function (pvs_studio_add_target)
 
     pvs_studio_relative_path(LOG_RELATIVE "${CMAKE_BINARY_DIR}" "${PVS_STUDIO_LOG}")
     if (PVS_STUDIO_PLOGS OR PVS_STUDIO_COMPILE_COMMANDS)
-        if (WIN32)
+        if (CMAKE_HOST_WIN32)
             string(REPLACE / \\ PVS_STUDIO_PLOGS "${PVS_STUDIO_PLOGS}")
-        endif()
-        if (WIN32)
             if (CMAKE_GENERATOR MATCHES "NMake")
                 set(COMMAND_TYPE_FILE "${CMAKE_BINARY_DIR}/PVSConcatAllLogs.cmd")
                 
@@ -574,7 +572,7 @@ function (pvs_studio_add_target)
         set(COMMENT "Generating ${LOG_RELATIVE}: no sources found")
     endif()
 
-    if (WIN32)
+    if (CMAKE_HOST_WIN32)
         string(REPLACE / \\ PVS_STUDIO_LOG "${PVS_STUDIO_LOG}")
     endif()
 
