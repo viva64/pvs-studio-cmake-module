@@ -3,7 +3,7 @@
 # 2020-2022 (c) PVS-Studio LLC
 # Version 12
 
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5)
 cmake_policy(SET CMP0054 NEW)
 
 if (PVS_STUDIO_AS_SCRIPT)
@@ -185,7 +185,7 @@ function (pvs_studio_analyze_file SOURCE SOURCE_DIR BINARY_DIR)
     pvs_studio_relative_path(SOURCE_RELATIVE "${SOURCE_DIR}" "${SOURCE}")
     pvs_studio_join_path(SOURCE "${SOURCE_DIR}" "${SOURCE}")
 
-    set(LOG "${BINARY_DIR}/PVS-Studio/${SOURCE_RELATIVE}.log")
+    set(LOG "${BINARY_DIR}/PVS-Studio/${TARGET}/${SOURCE_RELATIVE}.log")
     get_filename_component(LOG "${LOG}" REALPATH)
     get_filename_component(PARENT_DIR "${LOG}" DIRECTORY)
 
@@ -526,7 +526,7 @@ function (pvs_studio_add_target)
             string(REPLACE / \\ PVS_STUDIO_PLOGS "${PVS_STUDIO_PLOGS}")
             if (CMAKE_GENERATOR MATCHES "NMake")
                 set(COMMAND_TYPE_FILE "${CMAKE_BINARY_DIR}/PVSConcatAllLogs.cmd")
-                
+
                 # The number of files that will be merged in one call to the type command
                 set(STEP_SIZE 30)
                 set(BEGIN 0)
@@ -542,7 +542,7 @@ function (pvs_studio_add_target)
                     file(APPEND ${COMMAND_TYPE_FILE} "type ${NEW_LIST} >> ${PVS_STUDIO_LOG} 2>nul || cd .\n")
                     math(EXPR BEGIN "${BEGIN} + ${STEP_SIZE}")
                 endwhile()
-                
+
                 list(APPEND COMMANDS COMMAND call ${COMMAND_TYPE_FILE})
             else()
                 set(COMMANDS COMMAND type ${PVS_STUDIO_PLOGS} ${PVS_STUDIO_PLOGS_LOGS} > "${PVS_STUDIO_LOG}" 2>nul || cd .)
