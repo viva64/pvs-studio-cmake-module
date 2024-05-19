@@ -349,9 +349,9 @@ function (pvs_studio_add_target)
           # The registry value is only read when you do some cache operation on it.
           # https://stackoverflow.com/questions/1762201/reading-registry-values-with-cmake
           GET_FILENAME_COMPONENT(ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\ProgramVerificationSystems\\PVS-Studio;installDir]" ABSOLUTE CACHE)
-		else()
-		  # for some reason, set(ROOT "$ENV{${ROOT}}/PVS-Studio") did not work
-		  set(ROOT "$ENV{ProgramFiles\(x86\)}/PVS-Studio")
+        else()
+          # for some reason, set(ROOT "$ENV{${ROOT}}/PVS-Studio") did not work
+          set(ROOT "$ENV{ProgramFiles\(x86\)}/PVS-Studio")
         endif()		
         if (EXISTS "${ROOT}")
            set(PATHS "${ROOT}")
