@@ -38,8 +38,10 @@ if (PVS_STUDIO_AS_SCRIPT)
                     OUTPUT_VARIABLE output
                     ERROR_VARIABLE error)
 
-    if (result AND NOT output MATCHES "^No compilation units were found\\.")
-        message(FATAL_ERROR "PVS-Studio exited with non-zero code.\nStdout:\n${output}\nStderr:\n${error}\n")
+
+    SET (IGNORED_RETURN_CODES 0;7)                
+    if (NOT result IN_LIST IGNORED_RETURN_CODES)
+        message(FATAL_ERROR "PVS-Studio exited with code ${result}.\nStdout:\n${output}\nStderr:\n${error}\n")
     endif()
 
     return()
