@@ -40,7 +40,7 @@ if (PVS_STUDIO_AS_SCRIPT)
 
 
     SET (IGNORED_RETURN_CODES 0;7)                
-    if (NOT result IN_LIST IGNORED_RETURN_CODES)
+    if (NOT result IN_LIST IGNORED_RETURN_CODES AND NOT output MATCHES "^No compilation units were found\\.")
         message(FATAL_ERROR "PVS-Studio exited with code ${result}.\nStdout:\n${output}\nStderr:\n${error}\n")
     endif()
 
