@@ -464,6 +464,7 @@ function (pvs_studio_add_target)
 
     set(inc_path)
 
+    set(TARGET_DEPENDS)
     foreach (TARGET ${PVS_STUDIO_ANALYZE})
         set(DIR "${CMAKE_CURRENT_SOURCE_DIR}")
         string(FIND "${TARGET}" ":" DELIM)
@@ -479,7 +480,7 @@ function (pvs_studio_add_target)
             endif()
         endif()
         pvs_studio_analyze_target("${TARGET}" "${DIR}")
-        list(APPEND PVS_STUDIO_DEPENDS "${TARGET}")
+        list(APPEND TARGET_DEPENDS "${TARGET}")
 
         if ("${inc_path}" STREQUAL "")
             set(inc_path "$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>")
@@ -495,8 +496,10 @@ function (pvs_studio_add_target)
             set(DIR "${TARGET_SOURCE_DIR}")
         endif()
         pvs_studio_analyze_target("${TARGET}" "${DIR}")
-        list(APPEND PVS_STUDIO_DEPENDS "${TARGET}")
+        list(APPEND TARGET_DEPENDS "${TARGET}")
     endforeach()
+
+    list(APPEND PVS_STUDIO_DEPENDS "${TARGET_DEPENDS}")
 
     set(PVS_STUDIO_TARGET_CXX_FLAGS "")
     set(PVS_STUDIO_TARGET_C_FLAGS "")
