@@ -1,6 +1,6 @@
 # 2006-2008 (c) Viva64.com Team
 # 2008-2020 (c) OOO "Program Verification Systems"
-# 2020-2022 (c) PVS-Studio LLC
+# 2020-2025 (c) PVS-Studio LLC
 # Version 12
 
 cmake_minimum_required(VERSION 3.5)
