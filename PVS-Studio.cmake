@@ -3,7 +3,7 @@
 # 2020-2025 (c) PVS-Studio LLC
 # Version 12
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 cmake_policy(SET CMP0054 NEW)
 
 if (PVS_STUDIO_AS_SCRIPT)
@@ -103,12 +103,14 @@ macro (pvs_studio_append_flags_from_property CXX C DIR PREFIX)
 endmacro()
 
 macro (pvs_studio_append_standard_flag FLAGS STANDARD)
-    if ("${STANDARD}" MATCHES "^(99|11|14|17|20)$")
-        if ("${PVS_STUDIO_PREPROCESSOR}" MATCHES "gcc|clang")
-            list(APPEND "${FLAGS}" "-std=c++${STANDARD}")
-        elseif("${PVS_STUDIO_PREPROCESSOR}" MATCHES "visualcpp")
-            list(APPEND "${FLAGS}" "/std:c++${STANDARD}")
-        endif()
+    if ("${PVS_STUDIO_PREPROCESSOR}" MATCHES "gcc|clang")
+      list(APPEND "${FLAGS}" "-std=c++${STANDARD}")
+    elseif("${PVS_STUDIO_PREPROCESSOR}" MATCHES "visualcpp")
+      if ("${STANDARD}" MATCHES "^(99|11|14|17|20)$")
+        list(APPEND "${FLAGS}" "/std:c++${STANDARD}")
+      else()
+        list(APPEND "${FLAGS}" "/std:c++latest")
+      endif()
     endif()
 endmacro()
 
@@ -317,6 +319,7 @@ option(PVS_STUDIO_DEBUG OFF "Add debug info")
 # CXX_FLAGS flags...            additional CXX_FLAGS
 # ARGS args...                  additional pvs-studio-analyzer/CompilerCommandsAnalyzer.exe flags
 # CONVERTER_ARGS args...        additional plog-converter/HtmlGenerator.exe flags
+# CONVERTER_MODE mode           analyzers/levels filter (default: all)
 function (pvs_studio_add_target)
     macro (default VAR VALUE)
         if ("${${VAR}}" STREQUAL "")
@@ -389,6 +392,7 @@ function (pvs_studio_add_target)
     endif()
 
     default(PVS_STUDIO_MODE "GA:1,2")
+    default(PVS_STUDIO_CONVERTER_MODE "all")
     default(PVS_STUDIO_PREPROCESSOR "${DEFAULT_PREPROCESSOR}")
     if (WIN32)
         default(PVS_STUDIO_PLATFORM "x64")
@@ -397,6 +401,7 @@ function (pvs_studio_add_target)
     endif()
 
     string(REPLACE ";" "+" PVS_STUDIO_MODE "${PVS_STUDIO_MODE}")
+    string(REPLACE ";" "+" PVS_STUDIO_CONVERTER_MODE "${PVS_STUDIO_CONVERTER_MODE}")
 
     if ("${PVS_STUDIO_CONFIG}" STREQUAL "" AND NOT "${PVS_STUDIO_CFG_TEXT}" STREQUAL "")
         set(PVS_STUDIO_CONFIG "${CMAKE_BINARY_DIR}/PVS-Studio.cfg")
@@ -582,10 +587,11 @@ function (pvs_studio_add_target)
             if (PVS_STUDIO_OUTPUT)
               set(PVS_STUDIO_CONVERTER_ARGS ${PVS_STUDIO_CONVERTER_ARGS} --stdout)
             endif()
+            list (APPEND PVS_STUDIO_CONVERTER_ARGS -a "${PVS_STUDIO_CONVERTER_MODE}")
             list(APPEND COMMANDS
                  COMMAND "${CMAKE_COMMAND}" -E remove -f "${PVS_STUDIO_LOG}.pvs.raw"
                  COMMAND "${CMAKE_COMMAND}" -E rename "${PVS_STUDIO_LOG}" "${PVS_STUDIO_LOG}.pvs.raw"
-                 COMMAND "${PVS_STUDIO_CONVERTER}" "${PVS_STUDIO_CONVERTER_ARGS}" -t "${PVS_STUDIO_FORMAT}" "${PVS_STUDIO_LOG}.pvs.raw" -o "${PVS_STUDIO_LOG}" -a "${PVS_STUDIO_MODE}")
+                 COMMAND "${PVS_STUDIO_CONVERTER}" "${PVS_STUDIO_CONVERTER_ARGS}" -t "${PVS_STUDIO_FORMAT}" "${PVS_STUDIO_LOG}.pvs.raw" -o "${PVS_STUDIO_LOG}")
             if (NOT PVS_STUDIO_KEEP_COMBINED_PLOG)
                 list(APPEND COMMANDS COMMAND "${CMAKE_COMMAND}" -E remove -f "${PVS_STUDIO_LOG}.pvs.raw")
             endif()
