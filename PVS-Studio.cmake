@@ -3,7 +3,7 @@
 # 2020-2025 (c) PVS-Studio LLC
 # Version 12
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 cmake_policy(SET CMP0054 NEW)
 
 if (PVS_STUDIO_AS_SCRIPT)
@@ -103,12 +103,16 @@ macro (pvs_studio_append_flags_from_property CXX C DIR PREFIX)
 endmacro()
 
 macro (pvs_studio_append_standard_flag FLAGS STANDARD)
-    if ("${STANDARD}" MATCHES "^(99|11|14|17|20)$")
-        if ("${PVS_STUDIO_PREPROCESSOR}" MATCHES "gcc|clang")
-            list(APPEND "${FLAGS}" "-std=c++${STANDARD}")
-        elseif("${PVS_STUDIO_PREPROCESSOR}" MATCHES "visualcpp")
-            list(APPEND "${FLAGS}" "/std:c++${STANDARD}")
-        endif()
+    if ("${PVS_STUDIO_PREPROCESSOR}" MATCHES "gcc|clang")
+      if ("${STANDARD}" MATCHES "^(99|11|14|17|20|23)$")
+        list(APPEND "${FLAGS}" "-std=c++${STANDARD}")
+      endif()
+    elseif("${PVS_STUDIO_PREPROCESSOR}" MATCHES "visualcpp")
+      if ("${STANDARD}" MATCHES "^(99|11|14|17|20)$")
+        list(APPEND "${FLAGS}" "/std:c++${STANDARD}")
+      else()
+        list(APPEND "${FLAGS}" "/std:c++latest")
+      endif()
     endif()
 endmacro()
 
@@ -582,10 +586,16 @@ function (pvs_studio_add_target)
             if (PVS_STUDIO_OUTPUT)
               set(PVS_STUDIO_CONVERTER_ARGS ${PVS_STUDIO_CONVERTER_ARGS} --stdout)
             endif()
+
+            string(FIND "${PVS_STUDIO_CONVERTER_ARGS}" "-a" CONVERTER_MODE_POS)
+            if(CONVERTER_MODE_POS EQUAL -1)
+                list (APPEND PVS_STUDIO_CONVERTER_ARGS -a all)
+            endif()
+
             list(APPEND COMMANDS
                  COMMAND "${CMAKE_COMMAND}" -E remove -f "${PVS_STUDIO_LOG}.pvs.raw"
                  COMMAND "${CMAKE_COMMAND}" -E rename "${PVS_STUDIO_LOG}" "${PVS_STUDIO_LOG}.pvs.raw"
-                 COMMAND "${PVS_STUDIO_CONVERTER}" "${PVS_STUDIO_CONVERTER_ARGS}" -t "${PVS_STUDIO_FORMAT}" "${PVS_STUDIO_LOG}.pvs.raw" -o "${PVS_STUDIO_LOG}" -a "${PVS_STUDIO_MODE}")
+                 COMMAND "${PVS_STUDIO_CONVERTER}" "${PVS_STUDIO_CONVERTER_ARGS}" -t "${PVS_STUDIO_FORMAT}" "${PVS_STUDIO_LOG}.pvs.raw" -o "${PVS_STUDIO_LOG}")
             if (NOT PVS_STUDIO_KEEP_COMBINED_PLOG)
                 list(APPEND COMMANDS COMMAND "${CMAKE_COMMAND}" -E remove -f "${PVS_STUDIO_LOG}.pvs.raw")
             endif()
