@@ -191,6 +191,8 @@ function (pvs_studio_analyze_file SOURCE SOURCE_DIR BINARY_DIR)
     pvs_studio_relative_path(SOURCE_RELATIVE "${SOURCE_DIR}" "${SOURCE}")
     pvs_studio_join_path(SOURCE "${SOURCE_DIR}" "${SOURCE}")
 
+    string(REGEX REPLACE "\\.\\." "." SOURCE_RELATIVE ${SOURCE_RELATIVE})
+
     set(LOG "${BINARY_DIR}/PVS-Studio/${TARGET}/${SOURCE_RELATIVE}.log")
     get_filename_component(LOG "${LOG}" REALPATH)
     get_filename_component(PARENT_DIR "${LOG}" DIRECTORY)
