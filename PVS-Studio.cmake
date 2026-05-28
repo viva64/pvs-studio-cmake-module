@@ -1,9 +1,9 @@
 # 2006-2008 (c) Viva64.com Team
 # 2008-2020 (c) OOO "Program Verification Systems"
-# 2020-2025 (c) PVS-Studio LLC
+# 2020-2026 (c) PVS-Studio LLC
 # Version 12
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 cmake_policy(SET CMP0054 NEW)
 
 if (PVS_STUDIO_AS_SCRIPT)
@@ -33,7 +33,18 @@ if (PVS_STUDIO_AS_SCRIPT)
     endforeach()
 
     file(REMOVE "${PVS_STUDIO_LOG_FILE}")
-    execute_process(COMMAND ${PVS_STUDIO_COMMAND} ${additional_args}
+
+    list(POP_FRONT PVS_STUDIO_COMMAND pvs_studio_bin)
+    set(rsp_file "${PVS_STUDIO_LOG_FILE}.rsp")
+    set(rsp_content)
+
+    foreach (arg ${PVS_STUDIO_COMMAND} ${additional_args})
+        string(APPEND rsp_content "\"${arg}\"\n")
+    endforeach()
+
+    file(WRITE "${rsp_file}" "${rsp_content}")
+
+    execute_process(COMMAND "${pvs_studio_bin}" "@${rsp_file}"
                     RESULT_VARIABLE result
                     OUTPUT_VARIABLE output
                     ERROR_VARIABLE error)
@@ -139,11 +150,11 @@ function (pvs_studio_set_target_flags TARGET CXX C)
         list(APPEND C_FLAGS "$<$<BOOL:${CMAKE_SYSROOT}>:--sysroot=${CMAKE_SYSROOT}>")
     endif()
 
-    set(prop_incdirs "$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>")
+    set(prop_incdirs "$<REMOVE_DUPLICATES:$<TARGET_PROPERTY:${TARGET},INCLUDE_DIRECTORIES>>")
     list(APPEND CXX_FLAGS "$<$<BOOL:${prop_incdirs}>:-I$<JOIN:${prop_incdirs},$<SEMICOLON>-I>>")
     list(APPEND C_FLAGS "$<$<BOOL:${prop_incdirs}>:-I$<JOIN:${prop_incdirs},$<SEMICOLON>-I>>")
 
-    set(prop_compdefs "$<TARGET_PROPERTY:${TARGET},COMPILE_DEFINITIONS>")
+    set(prop_compdefs "$<REMOVE_DUPLICATES:$<TARGET_PROPERTY:${TARGET},COMPILE_DEFINITIONS>>")
     list(APPEND CXX_FLAGS "$<$<BOOL:${prop_compdefs}>:-D$<JOIN:${prop_compdefs},$<SEMICOLON>-D>>")
     list(APPEND C_FLAGS "$<$<BOOL:${prop_compdefs}>:-D$<JOIN:${prop_compdefs},$<SEMICOLON>-D>>")
 
@@ -226,6 +237,7 @@ function (pvs_studio_analyze_file SOURCE SOURCE_DIR BINARY_DIR)
                    -P "${PVS_STUDIO_SCRIPT}")
 
         add_custom_command(OUTPUT "${LOG}"
+                           BYPRODUCTS "${LOG}.rsp"
                            COMMAND "${CMAKE_COMMAND}" -E make_directory "${PARENT_DIR}"
                            COMMAND "${CMAKE_COMMAND}" -E remove_directory "${LOG}"
                            COMMAND ${pvscmd} 
@@ -331,7 +343,7 @@ function (pvs_studio_add_target)
     endmacro()
 
     set(PVS_STUDIO_SUPPORTED_PREPROCESSORS "gcc|clang|visualcpp")
-    if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    if ("${CMAKE_C_COMPILER_ID};${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
         set(DEFAULT_PREPROCESSOR "clang")
     elseif (MSVC)
         set(DEFAULT_PREPROCESSOR "visualcpp")
@@ -398,6 +410,8 @@ function (pvs_studio_add_target)
     default(PVS_STUDIO_PREPROCESSOR "${DEFAULT_PREPROCESSOR}")
     if (WIN32)
         default(PVS_STUDIO_PLATFORM "x64")
+    elseif (APPLE)
+        default(PVS_STUDIO_PLATFORM "macos")
     else()
         default(PVS_STUDIO_PLATFORM "linux64")
     endif()
