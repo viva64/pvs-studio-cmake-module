@@ -39,7 +39,8 @@ if (PVS_STUDIO_AS_SCRIPT)
     set(rsp_content)
 
     foreach (arg ${PVS_STUDIO_COMMAND} ${additional_args})
-        string(APPEND rsp_content "\"${arg}\"\n")
+        string(REGEX REPLACE "([ \t\r\n])" "\\\\\\1" arg "${arg}")
+        string(APPEND rsp_content "${arg}\n")
     endforeach()
 
     file(WRITE "${rsp_file}" "${rsp_content}")
