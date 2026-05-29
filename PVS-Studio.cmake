@@ -39,7 +39,7 @@ if (PVS_STUDIO_AS_SCRIPT)
     set(rsp_content)
 
     foreach (arg ${PVS_STUDIO_COMMAND} ${additional_args})
-        string(REGEX REPLACE "([ \t\r\n])" "\\\\\\1" arg "${arg}")
+        string(REGEX REPLACE "([\\\\ \t\r\n])" [[\\\1]] arg "${arg}")
         string(APPEND rsp_content "${arg}\n")
     endforeach()
 
